@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <!-- Zajištění responsivity -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vyhledávání</title>
+    <link rel="shortcut icon" href="obrazky/magnifyingGlass.ico"/>
+    <!-- Načtení asynchronní Google CSE pro vyhledávání pomocí API -->
+    <script async src="https://cse.google.com/cse.js?cx=00dcb0bce4dd34b94"></script>
+    <style>
+        /*Styl stránky*/
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 50px;
+        }
+        /*Zarovnání na střed a ve stejné délce*/
+        .gsc-control-cse, h1 {
+            text-align: center;
+            color: #4d90fe;
+            max-width: 600px !important;
+            margin: 20px auto !important;
+        }
+        /*Zarovnání výsledků nalevo*/
+        .gsc-resultsbox-visible {
+            text-align: left;
+        }
+        /*Styl tlačítka pro uložení*/
+        #saveButton {
+            margin: 10px 0;
+            padding: 10px 20px;
+            background-color: #4d90fe;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Vyhledávání pomocí Google API</h1>
+    <!-- Vyhledávací pole -->
+    <div class="gcse-search"></div>
+
+    <script>
+         /* Pozorování změn v DOM a čekání na zobrazení výsleddků  pro přidání tlačítko "Uložit výsledky" */
+        function observeAndWaitForElement(selector, callback) {
+            const observer = new MutationObserver((mutations) => {
+            if (document.querySelector(selector)) {
+            callback();
+            observer.disconnect();
+        }
+    });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+
+            /* kontrola, zda element již neexistuje */
+            if (document.querySelector(selector)) {
+            callback();
+            observer.disconnect();
+        }
+    }
+
+        /* zavolání funkce */
+        observeAndWaitForElement('.gsc-resultsbox-visible', addSaveButton);
+
+         /* Přidání tlačítka "Uložit výsledky", když jsou výsledky viditelné */
+        function addSaveButton() {
+            const resultsDiv = document.querySelector('.gsc-resultsbox-visible');
+            if (resultsDiv && !document.getElementById('saveButton')) {
+                const saveButton = document.createElement('button');
+                saveButton.id = 'saveButton';
+                saveButton.textContent = 'Uložit výsledky';
+                saveButton.addEventListener('click', saveSearchResults);
+                resultsDiv.insertBefore(saveButton, resultsDiv.firstChild);
+            }
+        }
+         /* Uložení výsledků ve formátu JSON */
+        function saveSearchResults() {
+            const searchResults = document.querySelector('.gsc-results');
+            const results = searchResults.querySelectorAll('.gsc-result');
+            const jsonResults = [];
+
+            /* Sběr dat z výsledkŮ: název, odkaz a úryvek */
+            results.forEach((result) => {
+                const titleElement = result.querySelector('.gs-title');
+                const title = titleElement.textContent;
+                const link = titleElement.querySelector('a.gs-title')?.href || '';
+                const snippet = result.querySelector('.gs-snippet')?.textContent || '';
+
+                jsonResults.push({
+                    title: title,
+                    link: link,
+                    snippet: snippet
+                });
+            });
+            /* Vytvoření a stažení souboru JSON s výsledky */
+            const jsonString = JSON.stringify(jsonResults, null, 2);
+            const blob = new Blob([jsonString], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'search_results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } 
+    </script>
+</body>
+</html>

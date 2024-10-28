@@ -71,37 +71,46 @@
     </div>
 
     <script>
+        
         (function() {
             emailjs.init("rai5KtLfb8RzmY0mQ");
         })();
 
         async function handleSubmit(event) {
-            event.preventDefault();
-            
-            const jmeno = document.getElementById('jmeno').value;
-            const email = document.getElementById('email').value;
-            const message = document.getElementById('message').value;
-
-            try {
-                const response = await emailjs.send(
-                    "service_52edqlk",
-                    "template_2pef3an",
-                    {
-                        jmeno: jmeno,
-                        from_email: email,
-                        message: message,
-                    }
-                );
-
-                alert('Zpráva byla úspěšně odeslána!');
-                document.getElementById('contactForm').reset();
-            } catch (error) {
-                alert('Došlo k chybě při odesílání zprávy.');
-                console.error('Error:', error);
+    event.preventDefault();
+    
+    // Získáme tlačítko submit
+    const submitButton = event.target.querySelector('button[type="submit"]');
+    // Zneaktivníme tlačítko a můžeme změnit i jeho text
+    submitButton.disabled = true;
+    submitButton.textContent = 'Odesílá se...'; // volitelné
+    
+    const jmeno = document.getElementById('jmeno').value;
+    const email = document.getElementById('email').value;
+    const message = document.getElementById('message').value;
+    
+    try {
+        const response = await emailjs.send(
+            "service_52edqlk",
+            "template_2pef3an",
+            {
+                jmeno: jmeno,
+                from_email: email,
+                message: message,
             }
-
-            return false;
-        }
+        );
+        alert('Zpráva byla úspěšně odeslána!');
+        document.getElementById('contactForm').reset();
+    } catch (error) {
+        alert('Došlo k chybě při odesílání zprávy.');
+        console.error('Error:', error);
+    } finally {
+        // Znovu aktivujeme tlačítko a vrátíme původní text
+        submitButton.disabled = false;
+        submitButton.textContent = 'Odeslat'; // vraťte původní text tlačítka
+    }
+    return false;
+}
     </script>
 </body>
 </html>
